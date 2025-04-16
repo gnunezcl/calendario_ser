@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Ejercicios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .exercise-section, .calendar-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .exercise-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .exercise-option {
+            display: flex;
+            align-items: center;
+        }
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .calendar th, .calendar td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .calendar th {
+            background-color: #f2f2f2;
+        }
+        .selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f7ef;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Plataforma de Selección de Ejercicios</h1>
+        
+        <div class="exercise-section">
+            <h2>Selecciona los ejercicios disponibles</h2>
+            <div class="exercise-options">
+                <div class="exercise-option">
+                    <input type="checkbox" id="exercise1" name="exercise" value="DMR 730 911">
+                    <label for="exercise1">DMR 730 911</label>
+                </div>
+                <div class="exercise-option">
+                    <input type="checkbox" id="exercise2" name="exercise" value="DMR REDLA 97911">
+                    <label for="exercise2">DMR REDLA 97911</label>
+                </div>
+                <div class="exercise-option">
+                    <input type="checkbox" id="exercise3" name="exercise" value="HF">
+                    <label for="exercise3">HF</label>
+                </div>
+                <div class="exercise-option">
+                    <input type="checkbox" id="exercise4" name="exercise" value="VHF">
+                    <label for="exercise4">VHF</label>
+                </div>
+                <div class="exercise-option">
+                    <input type="checkbox" id="exercise5" name="exercise" value="UHF">
+                    <label for="exercise5">UHF</label>
+                </div>
+                <div class="exercise-option">
+                    <input type="checkbox" id="exercise6" name="exercise" value="REPETIDOR 433.275">
+                    <label for="exercise6">REPETIDOR 433.275</label>
+                </div>
+                <div class="exercise-option">
+                    <input type="checkbox" id="exercise7" name="exercise" value="REPETIDOR 433.375">
+                    <label for="exercise7">REPETIDOR 433.375</label>
+                </div>
+                <div class="exercise-option">
+                    <input type="checkbox" id="exercise8" name="exercise" value="REPETIDOR 147.360">
+                    <label for="exercise8">REPETIDOR 147.360</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="calendar-section">
+            <h2>Selecciona los días disponibles</h2>
+            <div class="month-selector">
+                <button id="prev-month">← Mes anterior</button>
+                <h3 id="current-month">Abril 2023</h3>
+                <button id="next-month">Mes siguiente →</button>
+            </div>
+            <table class="calendar" id="calendar">
+                <thead>
+                    <tr>
+                        <th>Dom</th><th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th><th>Sáb</th>
+                    </tr>
+                </thead>
+                <tbody id="calendar-body">
+                    <!-- Los días se generarán con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <button id="submit-btn">Guardar selección</button>
+        
+        <div id="summary">
+            <h2>Resumen de tu selección</h2>
+            <p><strong>Ejercicios seleccionados:</strong> <span id="selected-exercises"></span></p>
+            <p><strong>Días seleccionados:</strong> <span id="selected-days"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Variables para el calendario
+        let currentDate = new Date();
+        let selectedDays = [];
+        let selectedExercises = [];
+        
+        // Inicializar el calendario
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCalendar(currentDate);
+            
+            // Event listeners para los botones de mes
+            document.getElementById('prev-month').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar(currentDate);
+            });
+            
+            document.getElementById('next-month').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar(currentDate);
+            });
+            
+            // Event listener para el botón de guardar
+            document.getElementById('submit-btn').addEventListener('click', function() {
+                saveSelection();
+            });
+        });
+        
+        // Función para renderizar el calendario
+        function renderCalendar(date) {
+            const calendarBody = document.getElementById('calendar-body');
+            calendarBody.innerHTML = '';
+            
+            // Actualizar el título del mes
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                              "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            document.getElementById('current-month').textContent = 
+                `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            
+            // Obtener primer día del mes y último día del mes
+            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            
+            // Obtener día de la semana del primer día (0 = Domingo, 6 = Sábado)
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // Obtener número de días en el mes
+            const daysInMonth = lastDay.getDate();
+            
+            // Crear filas del calendario
+            let day = 1;
+            for (let i = 0; i < 6; i++) {
+                // Si ya hemos pasado todos los días del mes, salir del bucle
+                if (day > daysInMonth) break;
+                
+                const row = document.createElement('tr');
+                
+                // Crear celdas para cada día de la semana
+                for (let j = 0; j < 7; j++) {
+                    const cell = document.createElement('td');
+                    
+                    if ((i === 0 && j < firstDayOfWeek) || day > daysInMonth) {
+                        // Celda vacía (días del mes anterior o siguiente)
+                        cell.textContent = '';
+                    } else {
+                        // Celda con día del mes
+                        cell.textContent = day;
+                        
+                        // Crear una fecha completa para este día
+                        const cellDate = new Date(date.getFullYear(), date.getMonth(), day);
+                        
+                        // Verificar si este día está seleccionado
+                        if (selectedDays.some(d => d.toDateString() === cellDate.toDateString())) {
+                            cell.classList.add('selected');
+                        }
+                        
+                        // Añadir event listener para seleccionar/deseleccionar días
+                        cell.addEventListener('click', function() {
+                            toggleDaySelection(cell, cellDate);
+                        });
+                        
+                        day++;
+                    }
+                    
+                    row.appendChild(cell);
+                }
+                
+                calendarBody.appendChild(row);
+            }
+        }
+        
+        // Función para alternar la selección de un día
+        function toggleDaySelection(cell, date) {
+            const index = selectedDays.findIndex(d => d.toDateString() === date.toDateString());
+            
+            if (index === -1) {
+                // Añadir a la selección
+                selectedDays.push(date);
+                cell.classList.add('selected');
+            } else {
+                // Quitar de la selección
+                selectedDays.splice(index, 1);
+                cell.classList.remove('selected');
+            }
+        }
+        
+        // Función para guardar la selección
+        function saveSelection() {
+            // Obtener ejercicios seleccionados
+            const checkboxes = document.querySelectorAll('input[name="exercise"]:checked');
+            selectedExercises = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Mostrar resumen
+            const summary = document.getElementById('summary');
+            const selectedExercisesSpan = document.getElementById('selected-exercises');
+            const selectedDaysSpan = document.getElementById('selected-days');
+            
+            selectedExercisesSpan.textContent = selectedExercises.join(', ') || 'Ninguno';
+            
+            // Formatear fechas seleccionadas
+            const formattedDates = selectedDays.map(day => 
+                `${day.getDate()}/${day.getMonth() + 1}/${day.getFullYear()}`
+            );
+            selectedDaysSpan.textContent = formattedDates.join(', ') || 'Ninguno';
+            
+            summary.style.display = 'block';
+            
+            // Aquí normalmente enviarías los datos a un servidor
+            console.log('Ejercicios seleccionados:', selectedExercises);
+            console.log('Días seleccionados:', selectedDays);
+            
+            alert('Selección guardada correctamente');
+        }
+    </script>
+</body>
+</html>
